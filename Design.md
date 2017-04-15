@@ -1,13 +1,15 @@
+# Modbus-Tcl Design Documentation
+
 So, it seems I'm going to create a Modbus library for Tcl so I can control the VFD on my CNC router.
 
-Architecture:
+## Architecture:
+
  - A Tcl package for Modbus communication
  - An SQLite database of Modbus device types, including what various registers do, allowing a uniform device-independent abstraction layer to be created.
  - A Tcl script that runs under haltcl that mediates between LinuxCNC/HAL and the Modbus device. It should be OK for this to be a userspace/loadusr component.
  - An INI file for easier user setting of the Modbus connection and device parameters.
 
-
-Modbus overview:
+## Modbus overview:
 
 Modbus is a ...  All devices on a bus must share the same communication settings.
 
@@ -18,19 +20,22 @@ Messages consist of a device (or broadcast) address, a function code (command ty
 Owing to its 1970s origins, Modbus does not have provision for certain "modern" data types, or for slaves to report their capabilities (units, scaling factors, etc.).
 
 
-Modbus bus types:
+### Modbus bus types:
+
  - ASCII serial
  - binary serial (RTU)
  - TCP
  - Ethernet? I've seen mention of it but wonder if it's just a misnomer for TCP
 
-Modbus message types:
+### Modbus message types:
+
 03	0x03	read_holding_register_group
 	0x10	write_register_group
 
 ** byte-count sub-field?
 
-Error detection and reporting:
+
+### Error detection and reporting:
 
 There are several aspects to this:
  - Serial-level parity per character/byte
@@ -41,15 +46,16 @@ There are several aspects to this:
 0x83 function code
 
 
-Terminology
+### Terminology
 	coil
 	holding register
 
---
+
+### Conformance Classes
 
 Some useful extra information here on Conformance Classes and other
 
-http://www.rtaautomation.com/technologies/modbus-tcpip/
+<http://www.rtaautomation.com/technologies/modbus-tcpip/>
 
 Conformance_Class >---< Function_Code ?
 
