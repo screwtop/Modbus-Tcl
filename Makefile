@@ -3,8 +3,8 @@ all: db doc
 db: modbus.sqlite3
 
 modbus.sqlite3: Modbus-schema.sql Modbus-data.sql
-	sqlite3 --vfs unix-dotfile -batch -init Modbus-schema.sql modbus.sqlite3
-	sqlite3 --vfs unix-dotfile -batch -init Modbus-data.sql modbus.sqlite3
+	sqlite3 --vfs unix-dotfile -batch modbus.sqlite3 < Modbus-schema.sql
+	sqlite3 --vfs unix-dotfile -batch modbus.sqlite3 < Modbus-data.sql
 	
 doc: schema.png
 

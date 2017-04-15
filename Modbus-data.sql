@@ -2,14 +2,17 @@
 
 pragma foreign_keys = 1;
 
+insert into Physical_Quantity (Physical_Quantity) values ('(dimensionless)');
+
 insert into Physical_Quantity (Physical_Quantity) values ('current');
-insert into Physical_Quantity (Physical_Quantity) values ('electric_potential');
+insert into Physical_Quantity (Physical_Quantity) values ('voltage'); -- Was going to follow Frink and use electric_potential, but meh
 insert into Physical_Quantity (Physical_Quantity) values ('frequency');
 insert into Physical_Quantity (Physical_Quantity) values ('power');
 insert into Physical_Quantity (Physical_Quantity) values ('temperature');
 
 -- If in doubt, follow Frink for these. ;)
-insert into Unit (Name, Symbol, Physical_Quantity) values ('volt', 'V', 'electric_potential');
+insert into Unit (Name, Symbol, Physical_Quantity) values ('(dimensionless)', '', '(dimensionless)');
+insert into Unit (Name, Symbol, Physical_Quantity) values ('volt', 'V', 'voltage');
 insert into Unit (Name, Symbol, Physical_Quantity) values ('ampere', 'A', 'current');
 insert into Unit (Name, Symbol, Physical_Quantity) values ('watt', 'W', 'power');
 insert into Unit (Name, Symbol, Physical_Quantity) values ('horsepower', 'hp', 'power');
@@ -30,6 +33,15 @@ insert into Parameter (Parameter_Name, Parameter_Code) values ('output frequency
 insert into Parameter (Parameter_Name, Parameter_Code) values ('target frequency', 'target-frequency');
 insert into Parameter (Parameter_Name, Parameter_Code) values ('temperature', 'temperature');
 -- TODO: many more...
+
+-- Actually, those should be in Register_Type instead:
+insert into Register_Type (Register_Type_Code, Register_Type_Name, Physical_Quantity) values ('bus-voltage', 'Bus Voltage', 'voltage');
+insert into Register_Type (Register_Type_Code, Register_Type_Name, Physical_Quantity) values ('output-voltage', 'Output Voltage', 'voltage');
+insert into Register_Type (Register_Type_Code, Register_Type_Name, Physical_Quantity) values ('output-current', 'Output Current', 'current');
+insert into Register_Type (Register_Type_Code, Register_Type_Name, Physical_Quantity) values ('output-frequency', 'Output Frequency', 'frequency');
+insert into Register_Type (Register_Type_Code, Register_Type_Name, Physical_Quantity) values ('target-frequency', 'Target Frequency', 'frequency');
+insert into Register_Type (Register_Type_Code, Register_Type_Name, Physical_Quantity) values ('temperature', 'Temperature', 'temperature');	-- Or should it specify what the temperature is of, e.g. vfd-temperature or drive-temperature or device-temperature, ambient-temperature, coolant-temperature?
+insert into Register_Type (Register_Type_Code, Register_Type_Name, Physical_Quantity) values ('power-factor', 'Power Factor', '(dimensionless)');
 
 
 insert into Conformance_Class (Class_Code, Title, Description) values (0, 'minimum', 'Minimum useful set of functions for both Master and Slave devices');
@@ -71,10 +83,12 @@ insert into Function_Code (Function_Code, Function_Name, Conformance_Class) valu
 -- TODO: same for diagnostic codes
 -- Note that exception codes (cf. diagnostic codes) are simply the original function code + 0x80.
 insert into Diagnostic_Code (Diagnostic_Code, Diagnostic_Name) values (0, 'Return Query Data');
+/*
 insert into Diagnostic_Code (Diagnostic_Code, Diagnostic_Name) values (, '');
 insert into Diagnostic_Code (Diagnostic_Code, Diagnostic_Name) values (, '');
 insert into Diagnostic_Code (Diagnostic_Code, Diagnostic_Name) values (, '');
 insert into Diagnostic_Code (Diagnostic_Code, Diagnostic_Name) values (, '');
+*/
 
 -- TODO: include descriptive text as well, for error reporting? See Modbus spec p96-97
 insert into Exception_Code (Exception_Code, Exception_Name) values (1, 'ILLEGAL FUNCTION');
@@ -106,7 +120,7 @@ insert into Device_Type (Make, Model) values ('Delta', 'VFD-E');
 insert into Device_Type (Make, Model) values ('Delta', 'VFD-M');
 
 -- Command registers (TODO: distinguish from status regs!):
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2001, 'Target Frequency', 0.01, 'Hz');
+--insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2001, 'Target Frequency', 0.01, 'Hz');
 
 -- Status registers:
 insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2102, 'Target Frequency', 0.01, 'Hz');
@@ -115,7 +129,7 @@ insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, 
 insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2105, 'Bus Voltage', 0.1, 'V');
 insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2106, 'Output Voltage', 0.1, 'V');
 insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x210A, 'Power Factor', 0.1, ''); -- TODO: how to indicate dimensionless?  Empty string, or NULL, or '(dimensionless)' or something?
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x210D, 'Drive Temperature', 0.1, 'degC');
+insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x210D, 'Temperature', 0.1, '°C');
 
 -- What about sub-register fields such as status bits?  Might need to include a separate attribute for which bit or range of bits applies.  Might require multiple tables due to the variant structure.
 

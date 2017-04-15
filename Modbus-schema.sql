@@ -4,23 +4,22 @@
 -- TODO: table of Modbus function codes, table of support for function codes in device types.
 
 
-drop table Device;
-drop table Bus;
-drop table Bus_Type;
---drop table Device_Type_Register_Field;
-drop table Register_Type;
-drop table Device_Type_Function;
-drop table Device_Type_Register;
-drop table Device_Type;
-drop table Vendor;
-drop table Function_Code;
-drop table Exception_Code;
-drop table Diagnostic_Code;
-drop table Conformance_Class;
-drop table Unit;
-drop table Physical_Quantity;
-
-drop table Parameter;
+drop table if exists Device;
+drop table if exists Bus;
+drop table if exists Bus_Type;
+--drop table if exists Device_Type_Register_Field;
+drop table if exists Register_Type;
+drop table if exists Parameter;
+drop table if exists Device_Type_Function;
+drop table if exists Device_Type_Register;
+drop table if exists Device_Type;
+drop table if exists Vendor;
+drop table if exists Function_Code;
+drop table if exists Exception_Code;
+drop table if exists Diagnostic_Code;
+drop table if exists Conformance_Class;
+drop table if exists Unit;
+drop table if exists Physical_Quantity;
 
 
 create table Physical_Quantity
@@ -39,7 +38,7 @@ create table Unit
 	Physical_Quantity   varchar,	-- e.g. mass, power, etc.  And a separate table for these!
 
 	-- Hmm, maybe it would be preferable to use the symbol as the PK, since it's more concise.
-	constraint Unit_PK primary key (Name),
+	constraint Unit_PK primary key (Symbol),
 	constraint Unit__Physical_Quantity__FK foreign key (Physical_Quantity) references Physical_Quantity
 );
 
@@ -123,6 +122,7 @@ create table Vendor
 
 
 -- Separate tables for specific device types within a family?  As far as this library is concerned, we only really care about the Modbus interface commonality (although I could imagine even that changing slightly between firmware revisions, hmm).
+-- Device_Type/Model/Device_Family/Family?
 create table Device_Type
 (
 	Make varchar,
@@ -156,18 +156,19 @@ create table Register_Type
 (
 	Register_Type_Code varchar,
 	Register_Type_Name varchar,
-	Physical_Quantity varchar,
+	Physical_Quantity varchar, -- Might sometimes be dimensionless (e.g. power factor, status)
 	-- Probably not units, as that can vary between devices
 	-- Probably not scaling factor either, ditto
 	-- RW/RO (Command/Status) register type? Or should that be specified in Device_Type_Register[_Type]?
 	-- Note that not all register types will be for physical quantities, notably status indicators, firmware revision, etc.
 
-	constraint Register_Type_PK primary key (Register_Type_Code),
+	-- Which PK?  Code or Name?  The other should still be an AK.
+	constraint Register_Type_PK primary key (Register_Type_Name),
 	constraint Register_Type__Physical_Quantity__FK foreign key (Physical_Quantity) references Physical_Quantity
 );
 
 
--- Registers supported by a particular device type:
+-- Registers supported by a particular device type (what registers does a particular device type have?):
 -- Should this be called Device_Type_Register_Type for consistency?
 create table Device_Type_Register
 (
@@ -175,14 +176,14 @@ create table Device_Type_Register
 	Model varchar,
 	Register_Address varchar,	-- Modbus register address. Not necessarily unique (command register could have the same address as a status register?)?  So should that also be part of the PK?  Hexadecimal string? Or corresponding numeric value?
 	Register_Type varchar,	-- Um, what did I have in mind for this? Any old name? Ah, now lookup table (-> Register_Type)
-	-- RW/RO (Command/Status) register type? Or is that reliably determined by the address (the Modbus data table that that implies)? There may of course be multiple registers with the same apparent address but different meanings!
+	-- RW/RO (Command/Status) register type? Or is that reliably determined by the address (the Modbus data table that that implies)? There may of course be multiple registers with the same apparent address but different meanings!  Should we have a FK referencing Modbus_Table?
 	Scaling_Factor numeric,
 	Unit varchar,	-- Hmm, probably want to use the abbrevations here, not the full name! As long as those would be unique...
 
 	constraint Device_Type_Register_PK primary key (Make, Model, Register_Type),
 	constraint Device_Type_Register__Device_Type__FK foreign key (Make, Model) references Device_Type,
 	constraint Device_Type_Register__Register_Type__FK foreign key (Register_Type) references Register_Type,
-	constraint Device_Type_Register__Unit__FK foreign key (Unit) references Unit (Name)
+	constraint Device_Type_Register__Unit__FK foreign key (Unit) references Unit (Symbol)
 );
 
 
