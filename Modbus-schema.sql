@@ -7,7 +7,7 @@
 drop table Device;
 drop table Bus;
 drop table Bus_Type;
-drop table Device_Type_Register_Field;
+--drop table Device_Type_Register_Field;
 drop table Register_Type;
 drop table Device_Type_Function;
 drop table Device_Type_Register;
@@ -130,32 +130,40 @@ create table Device_Type
 	-- Firmware version as well, as part of the PK? That could make a difference to the supported registers and commands. But maybe there should be a separate table for device versions...
 	-- Perhaps also general specs about the device (output power, input power, etc.) - although often each type is an entire range of products, each with their own specs, so maybe not!
 	-- For supported function codes, is it enough to identify the conformance class, or should we M:N the individual codes?  Maybe both (conformance class to get the general idea, then itemize esp. the implementation-dependent FCs).
+	Conformance_Class integer,
 
 	constraint Device_Type_PK primary key (Make, Model),
-	constraint Device_Type__Vendor__FK foreign key (Make) references Vendor
-	references Conformance_Class
+	constraint Device_Type__Vendor__FK foreign key (Make) references Vendor,
+	constraint Device_Type__Conformance_Class__FK foreign key (Conformance_Class) references Conformance_Class
 );
 
 -- Specifics of which function codes each device type supports (beyond those defined by the basic conformance class)
 create table Device_Type_Function
 (
-	references Device_Type
-	references Function_Code
+	Make varchar,
+	Model varchar,
+	Function_Code varchar,
+
+	constraint Device_Type_Function_PK primary key (Make, Model, Function_Code),
+	constraint Device_Type_Function__Device_Type__FK foreign key (Make, Model) references Device_Type,
+	constraint Device_Type_Function__Function_Code__FK foreign key (Function_Code) references Function_Code
 );
 
 
 
--- Oh, is Rester_Type actually the same as Parameter..?
+-- Oh, is Rester_Type actually the same as Parameter..? I think prefer this. Can maybe use Parameter for device settings.
 create table Register_Type
 (
+	Register_Type_Code varchar,
+	Register_Type_Name varchar,
 	Physical_Quantity varchar,
 	-- Probably not units, as that can vary between devices
 	-- Probably not scaling factor either, ditto
 	-- RW/RO (Command/Status) register type? Or should that be specified in Device_Type_Register[_Type]?
 	-- Note that not all register types will be for physical quantities, notably status indicators, firmware revision, etc.
 
-	constraint Register_Type_PK primary key ()
-	references Physical_Quantity
+	constraint Register_Type_PK primary key (Register_Type_Code),
+	constraint Register_Type__Physical_Quantity__FK foreign key (Physical_Quantity) references Physical_Quantity
 );
 
 
@@ -179,11 +187,14 @@ create table Device_Type_Register
 
 
 -- TODO: more stuff on registers, especially on their interpretation. Basically a map of these per device.  How to model different types (e.g. combined registers, individual bits within a larger 16-bit word)?  And also indicate endianness, etc.
+/*
 create table Device_Type_Register_Field (
 	-- TODO...
-	references Device_Type_Register
-	references Register_Type
+	constraint Device_Type_Register_Field__PK primary key (),
+	constraint Device_Type_Register_Field__Device_Type_Register__FK foreign key () references Device_Type_Register,
+	constraint Device_Type_Register_Field__Register_Type__FK foreign key () references Register_Type
 );
+*/
 
 -- Even though many devices can be configured by the integrator for different comms parameters, might it make sense to record the default settings?  E.g. my Delta VFD-M is factory-configured for Modbus ASCII, 9600 bits/s, 7N2.
 
@@ -202,21 +213,25 @@ create table Bus_Type
 -- These are actual buses available on the system. No need to support multiple systems? These data are basically going to be non-persistent anyway, right?
 create table Bus
 (
-	Bus_Name
-	Bus_Type
+	Bus_Name varchar,
+	Bus_Type varchar,
 	-- ASCII/RTU(/TCP?), baud rate, etc.
 
-	references Bus_Type
+	constraint Bus_PK primary key (Bus_Name),
+	constraint Bus__Bus_Type__FK foreign key (Bus_Type) references Bus_Type
 );
 
 -- Probably don't need to store actual device instances persistently either, but...
 create table Device
 (
-	Make
-	Model
-	Bus
-	references Device_Type
-	references Bus
+	Device_Name varchar, -- User/installer/integrator-defined
+	Make varchar,
+	Model varchar,
+	Bus_Name varchar,
+
+	constraint Device_PK primary key (Device_Name),
+	constraint Device__Device_Type__FK foreign key (Make, Model) references Device_Type,
+	constraint Device__Bus__FK foreign key (Bus_Name) references Bus
 );
 
 -- Endut! Hoch hech!
