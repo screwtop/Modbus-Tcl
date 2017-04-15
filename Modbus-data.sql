@@ -120,16 +120,16 @@ insert into Device_Type (Make, Model) values ('Delta', 'VFD-E');
 insert into Device_Type (Make, Model) values ('Delta', 'VFD-M');
 
 -- Command registers (TODO: distinguish from status regs!):
---insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2001, 'Target Frequency', 0.01, 'Hz');
+--insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2001, 'Target Frequency', 0.01, 'Hz');
 
 -- Status registers:
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2102, 'Target Frequency', 0.01, 'Hz');
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2103, 'Output Frequency', 0.01, 'Hz');
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2104, 'Output Current', 0.1, 'A');
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2105, 'Bus Voltage', 0.1, 'V');
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x2106, 'Output Voltage', 0.1, 'V');
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x210A, 'Power Factor', 0.1, ''); -- TODO: how to indicate dimensionless?  Empty string, or NULL, or '(dimensionless)' or something?
-insert into Device_Type_Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 0x210D, 'Temperature', 0.1, '°C');
+insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 8450, 'Target Frequency', 0.01, 'Hz'); -- 0x2102
+insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 8451, 'Output Frequency', 0.01, 'Hz'); -- 0x2103
+insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 8452, 'Output Current', 0.1, 'A'); -- 0x2104
+insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 8453, 'Bus Voltage', 0.1, 'V'); -- 0x2105
+insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 8454, 'Output Voltage', 0.1, 'V'); -- 0x2106
+insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 8458, 'Power Factor', 0.1, ''); -- 0x210A  TODO: how to indicate dimensionless?  Empty string, or NULL, or '(dimensionless)' or something?
+insert into Register (Make, Model, Register_Address, Register_Type, Scaling_Factor, Unit) values ('Delta', 'VFD-M', 8461, 'Temperature', 0.1, '°C'); -- 0x210D
 
 -- What about sub-register fields such as status bits?  Might need to include a separate attribute for which bit or range of bits applies.  Might require multiple tables due to the variant structure.
 

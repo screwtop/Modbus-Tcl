@@ -7,11 +7,11 @@
 drop table if exists Device;
 drop table if exists Bus;
 drop table if exists Bus_Type;
---drop table if exists Device_Type_Register_Field;
+--drop table if exists Register_Field;
 drop table if exists Register_Type;
 drop table if exists Parameter;
-drop table if exists Device_Type_Function;
-drop table if exists Device_Type_Register;
+drop table if exists Device_Function;
+drop table if exists Register;
 drop table if exists Device_Type;
 drop table if exists Vendor;
 drop table if exists Function_Code;
@@ -138,15 +138,15 @@ create table Device_Type
 );
 
 -- Specifics of which function codes each device type supports (beyond those defined by the basic conformance class)
-create table Device_Type_Function
+create table Device_Function
 (
 	Make varchar,
 	Model varchar,
 	Function_Code varchar,
 
-	constraint Device_Type_Function_PK primary key (Make, Model, Function_Code),
-	constraint Device_Type_Function__Device_Type__FK foreign key (Make, Model) references Device_Type,
-	constraint Device_Type_Function__Function_Code__FK foreign key (Function_Code) references Function_Code
+	constraint Device_Function_PK primary key (Make, Model, Function_Code),
+	constraint Device_Function__Device_Type__FK foreign key (Make, Model) references Device_Type,
+	constraint Device_Function__Function_Code__FK foreign key (Function_Code) references Function_Code
 );
 
 
@@ -159,7 +159,7 @@ create table Register_Type
 	Physical_Quantity varchar, -- Might sometimes be dimensionless (e.g. power factor, status)
 	-- Probably not units, as that can vary between devices
 	-- Probably not scaling factor either, ditto
-	-- RW/RO (Command/Status) register type? Or should that be specified in Device_Type_Register[_Type]?
+	-- RW/RO (Command/Status) register type? Or should that be specified in Register[_Type]?
 	-- Note that not all register types will be for physical quantities, notably status indicators, firmware revision, etc.
 
 	-- Which PK?  Code or Name?  The other should still be an AK.
@@ -169,31 +169,32 @@ create table Register_Type
 
 
 -- Registers supported by a particular device type (what registers does a particular device type have?):
--- Should this be called Device_Type_Register_Type for consistency?
-create table Device_Type_Register
+-- Should this be called Register_Type for consistency?
+create table Register
 (
 	Make varchar,
 	Model varchar,
 	Register_Address varchar,	-- Modbus register address. Not necessarily unique (command register could have the same address as a status register?)?  So should that also be part of the PK?  Hexadecimal string? Or corresponding numeric value?
 	Register_Type varchar,	-- Um, what did I have in mind for this? Any old name? Ah, now lookup table (-> Register_Type)
 	-- RW/RO (Command/Status) register type? Or is that reliably determined by the address (the Modbus data table that that implies)? There may of course be multiple registers with the same apparent address but different meanings!  Should we have a FK referencing Modbus_Table?
+	-- Interpretation (s16, u16, float)? Endianness?
 	Scaling_Factor numeric,
 	Unit varchar,	-- Hmm, probably want to use the abbrevations here, not the full name! As long as those would be unique...
 
-	constraint Device_Type_Register_PK primary key (Make, Model, Register_Type),
-	constraint Device_Type_Register__Device_Type__FK foreign key (Make, Model) references Device_Type,
-	constraint Device_Type_Register__Register_Type__FK foreign key (Register_Type) references Register_Type,
-	constraint Device_Type_Register__Unit__FK foreign key (Unit) references Unit (Symbol)
+	constraint Register_PK primary key (Make, Model, Register_Type),
+	constraint Register__Device_Type__FK foreign key (Make, Model) references Device_Type,
+	constraint Register__Register_Type__FK foreign key (Register_Type) references Register_Type,
+	constraint Register__Unit__FK foreign key (Unit) references Unit (Symbol)
 );
 
 
 -- TODO: more stuff on registers, especially on their interpretation. Basically a map of these per device.  How to model different types (e.g. combined registers, individual bits within a larger 16-bit word)?  And also indicate endianness, etc.
 /*
-create table Device_Type_Register_Field (
+create table Register_Field (
 	-- TODO...
-	constraint Device_Type_Register_Field__PK primary key (),
-	constraint Device_Type_Register_Field__Device_Type_Register__FK foreign key () references Device_Type_Register,
-	constraint Device_Type_Register_Field__Register_Type__FK foreign key () references Register_Type
+	constraint Register_Field__PK primary key (),
+	constraint Register_Field__Register__FK foreign key () references Register,
+	constraint Register_Field__Register_Type__FK foreign key () references Register_Type
 );
 */
 
