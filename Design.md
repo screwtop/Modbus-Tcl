@@ -27,12 +27,13 @@ Owing to its 1970s origins, Modbus does not have provision for certain "modern" 
  - TCP
  - Ethernet? I've seen mention of it but wonder if it's just a misnomer for TCP
 
+
 ### Modbus message types:
 
-03	0x03	read_holding_register_group
-	0x10	write_register_group
-
-** byte-count sub-field?
+	03	0x03	read_holding_register_group
+		0x10	write_register_group
+	
+	** byte-count sub-field?
 
 
 ### Error detection and reporting:
@@ -47,21 +48,34 @@ There are several aspects to this:
 
 
 ### Terminology
-	coil
-	holding register
+
+TODO:
+
+ - coil
+ - holding register
 
 
 ### Conformance Classes
 
-Some useful extra information here on Conformance Classes and other
+Some useful extra information here on Conformance Classes and other details:
 
 <http://www.rtaautomation.com/technologies/modbus-tcpip/>
 
-Conformance_Class >---< Function_Code ?
+So, would we model it as M:N?
 
-Or perhaps every Class implies that all lower classes must also support it, in which case:
+	Conformance_Class >---< Function_Code ?
 
-Function_Code >---- Conformance_Class
+I think that's overly flexible: AFAICT, a function appearing in a conformance class implies that all lower classes must also support it, in which case this would be enough:
+
+	Function_Code >---- Conformance_Class
+
+Then devices types/families can be classified like so:
+
+	Device_Type >---- Conformance_Class
+
+Specific functionality can still be documented like so:
+
+	Device_Type ----< Device_Function >---- Function_Code
 
 (Note: transaction type = function (code))
 
@@ -69,12 +83,12 @@ Level 0 is universally supported. Might also be useful to flag non-interoperable
 
 Modbus/TCP?  Note that the message format is a little different, with Unit Identifier replacing Slave Address (used for interacting with network infrastructure).
 
-Can exceptions be recognised by examining a single bit in the response?  It has the effect of adding 0x80 to the function code of the request.  So, yes - the most significant bit is set if it is an exception response.  The remaining bits identify the function code being responded to.
+Can exceptions be recognised by examining a single bit in the response?  It has the effect of adding 0x80 to the function code of the request.  So, yes---the most significant bit is set if it is an exception response.  The remaining bits identify the function code being responded to.
 
 
 ### Timing
 
-Modbus (AIUI) is a synchronous protocol: slaves speak only when spoken to, and presumably the master should wait for a response before attempting to issue another. However, the meaning of a slave message is generally clear, as it includes all the important fields from the master's request, namely the slave ID and function code. But, since there is no message collision control, it would not make sense to have multiple outstanding requests. Therefore, it would be reasonable to wait for a slave response (up to a certain timeout) after each request.
+Modbus (AIUI) is a synchronous protocol: slaves speak only when spoken to, and presumably the master should wait for a response before attempting to issue another. The meaning of a slave response message requires some knowledge of the original request: even though the slave response echoes the slave ID and function code from the master's request, it doesn't include the register address. Furthermore, since there is no collision control, it would not make sense to have multiple outstanding requests. Therefore, it would be reasonable to wait for a slave response (up to a certain timeout) after each request.
 
 Some PLCs will buffer incoming messages and scan periodically, perhaps on a 20..200 ms cycle time.  So, it would be reasonable to wait up to maybe 500 ms for a response?  Perhaps the timeout should be able to be specified for each connection (or bus?).  Clearly, what's reasonable will be situation-dependent, so it probably won't work to have one size fits all.  Certainly the modbus library in Tcl-measure has timeout as a property.
 
